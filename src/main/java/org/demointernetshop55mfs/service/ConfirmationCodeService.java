@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.demointernetshop55mfs.entity.ConfirmationCode;
 import org.demointernetshop55mfs.entity.User;
 import org.demointernetshop55mfs.repository.ConfirmationCodeRepository;
+import org.demointernetshop55mfs.service.exception.NotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -72,7 +73,7 @@ public class ConfirmationCodeService {
 
     public User confirmUserByCode(String code){
         ConfirmationCode confirmationCode = repository.findByCode(code)
-                .orElseThrow(() -> new RuntimeException("Confirmation code: " + code + " not found" ));
+                .orElseThrow(() -> new NotFoundException("Confirmation code: " + code + " not found" ));
 
         User user = confirmationCode.getUser();
 
