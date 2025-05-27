@@ -31,7 +31,7 @@ public class Converter {
                 .build();
     }
 
-    public List<UserResponseDto> fromUser(List<User> users){
+    public List<UserResponseDto> fromUsers(List<User> users){
         return users.stream()
                 .map(user -> toDto(user))
                 .toList();
