@@ -1,6 +1,5 @@
 package org.demointernetshop55mfs.controller;
 
-
 import org.demointernetshop55mfs.entity.ConfirmationCode;
 import org.demointernetshop55mfs.entity.User;
 import org.demointernetshop55mfs.repository.ConfirmationCodeRepository;
@@ -30,10 +29,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @TestPropertySource(locations = "classpath:application-test.yml")
 class UserControllerTest {
+
     @Autowired
     private MockMvc mockMvc;
+
     @Autowired
     private UserRepository userRepository;
+
     @Autowired
     private ConfirmationCodeRepository confirmationCodeRepository;
 
@@ -61,49 +63,36 @@ class UserControllerTest {
         userRepository.deleteAll();
     }
 
-
     @Test
     @WithMockUser(username = "user", roles = {"USER"})
     void testGetUserByIdWhenIDCorrect() throws Exception {
-        String requestPath = "/api/users/1";
-
-        mockMvc.perform(get(requestPath)
-                .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/api/users/1")
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.email").value("user1@gmail.com"));
-
     }
 
     @Test
     @WithMockUser(username = "user", roles = {"USER"})
     void testGetUserByIdWhenIDNotExist() throws Exception {
-        String requestPath = "/api/users/2";
-        String errorMessage = "Пользователь с ID = 2 не найден";
+        String errorMessage = "User with ID = 2 not found";
 
-        mockMvc.perform(get(requestPath)
+        mockMvc.perform(get("/api/users/2")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.errorMessage").value(errorMessage));
-
+                .andExpect(jsonPath("$.error").value("Not Found"))
+                .andExpect(jsonPath("$.message").value(errorMessage));
     }
 
     @Test
     @WithMockUser(username = "user", roles = {"USER"})
     void testGetUserByIdWhenIDNotCorrect() throws Exception {
-        String requestPath = "/api/users/2a";
-        String errorMessage = "userId";
-
-        mockMvc.perform(get(requestPath)
+        mockMvc.perform(get("/api/users/2a")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.parameter").value(errorMessage));
-
-
+                .andExpect(jsonPath("$.error").value("Invalid parameter"))
+                .andExpect(jsonPath("$.parameter").value("id"))
+                .andExpect(jsonPath("$.rejectedValue").value("2a"));
     }
-
-
-
-
-
 }

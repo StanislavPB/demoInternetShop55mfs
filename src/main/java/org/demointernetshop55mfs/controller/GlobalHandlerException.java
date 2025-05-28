@@ -1,67 +1,100 @@
 package org.demointernetshop55mfs.controller;
 
 import jakarta.validation.ConstraintViolationException;
+import org.demointernetshop55mfs.dto.ApiError;
 import org.demointernetshop55mfs.service.exception.AlreadyExistException;
 import org.demointernetshop55mfs.service.exception.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @ControllerAdvice
 public class GlobalHandlerException {
 
     @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<String> handlerNotFoundException(NotFoundException e){
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+    public ResponseEntity<ApiError> handleNotFoundException(NotFoundException e) {
+        ApiError error = ApiError.builder()
+                .error("Not Found")
+                .message(e.getMessage())
+                .timestamp(LocalDateTime.now())
+                .build();
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(AlreadyExistException.class)
-    public ResponseEntity<Map<String, String>> handlerAlreadyExistException(AlreadyExistException e){
-        Map<String, String> errorResponse = new HashMap<>();
-        errorResponse.put("error",e.getMessage());
-        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+    public ResponseEntity<ApiError> handleAlreadyExistException(AlreadyExistException e) {
+        ApiError error = ApiError.builder()
+                .error("Conflict")
+                .message(e.getMessage())
+                .timestamp(LocalDateTime.now())
+                .build();
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
     }
 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiError> handleValidationException(MethodArgumentNotValidException e) {
+        List<Map<String, Object>> fieldErrors = e.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(error -> {
+                    Map<String, Object> details = new HashMap<>();
+                    details.put("field", error.getField());
+                    details.put("message", error.getDefaultMessage());
+                    details.put("rejectedValue", error.getRejectedValue());
+                    return details;
+                })
+                .toList();
 
-    @ExceptionHandler(NullPointerException.class)
-    public ResponseEntity<String> handlerNullPointerException(NullPointerException e){
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        ApiError error = ApiError.builder()
+                .error("Validation Failed")
+                .message("One or more fields are invalid")
+                .errors(fieldErrors)
+                .timestamp(LocalDateTime.now())
+                .build();
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiError> handleTypeMismatch(MethodArgumentTypeMismatchException e) {
+        ApiError error = ApiError.builder()
+                .error("Invalid parameter")
+                .message("Failed to convert parameter")
+                .parameter(e.getName())
+                .rejectedValue(e.getValue())
+                .timestamp(LocalDateTime.now())
+                .build();
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<String> handlerConstraintViolationException(ConstraintViolationException e){
+    public ResponseEntity<ApiError> handleConstraintViolation(ConstraintViolationException e) {
+        String msg = e.getConstraintViolations().stream()
+                .map(v -> v.getPropertyPath() + ": " + v.getMessage())
+                .reduce("", (s1, s2) -> s1 + s2 + "; ");
 
-        StringBuilder responseMessage = new StringBuilder();
-
-        e.getConstraintViolations().forEach(constraintViolation -> {
-            String message = constraintViolation.getMessage();
-            responseMessage.append(message).append("\n");
-        });
-
-        return new ResponseEntity<>(responseMessage.toString(), HttpStatus.BAD_REQUEST);
+        ApiError error = ApiError.builder()
+                .error("Constraint Violation")
+                .message(msg)
+                .timestamp(LocalDateTime.now())
+                .build();
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
-
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handlerMethodArgumentNotValidException(MethodArgumentNotValidException e) {
-        Map<String, Object> response = new HashMap<>();
-
-        response.put("errors", e.getBindingResult().getFieldErrors().stream().map(error -> {
-            Map<String, Object> errorDetails = new HashMap<>();
-            errorDetails.put("field", error.getField());
-            errorDetails.put("message", error.getDefaultMessage());
-            errorDetails.put("rejectedValue", error.getRejectedValue());
-            return errorDetails;
-        }).toList());
-
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiError> handleGeneric(Exception e) {
+        ApiError error = ApiError.builder()
+                .error("Internal Server Error")
+                .message(e.getMessage())
+                .timestamp(LocalDateTime.now())
+                .build();
+        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-
-
 }

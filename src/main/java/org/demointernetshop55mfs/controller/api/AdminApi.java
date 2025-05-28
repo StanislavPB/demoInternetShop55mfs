@@ -15,12 +15,12 @@ import java.util.List;
 public interface AdminApi {
 
    // найти всех пользователей (полная информация - для ADMIN)
-    @GetMapping("/full")
+    @GetMapping("/users/fullDetails")
     public ResponseEntity<List<User>> findAllFullDetails();
 
 
     // найти всех пользователей (ограниченная информация - для MANAGER)
-    @GetMapping("/manager/all")
+    @GetMapping("/users")
     public ResponseEntity<List<UserResponseDto>> findAll();
 
     // удалить запись
