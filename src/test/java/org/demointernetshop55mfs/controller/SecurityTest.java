@@ -74,7 +74,7 @@ public class SecurityTest {
 
     @Test
     public void testWhenNoAuthenticationThenReturn403Admins() throws Exception {
-        String requestPath = "/api/admins/users";
+        String requestPath = "/api/admin/users";
         mockMvc.perform(get(requestPath)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
@@ -85,7 +85,7 @@ public class SecurityTest {
     @Test
     @WithMockUser(username = "user",roles = {"USER"})
     public void testWhenNoAuthorizeRoleThenReturn403Admins() throws Exception {
-        String requestPath = "/api/admins/users";
+        String requestPath = "/api/admin/users";
         mockMvc.perform(get(requestPath)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
@@ -95,7 +95,7 @@ public class SecurityTest {
     @Test
     @WithMockUser(username = "admin",roles = {"ADMIN"})
     public void testWhenReturn200ForAdminRequest() throws Exception {
-        String requestPath = "/api/admins/users";
+        String requestPath = "/api/admin/users";
         mockMvc.perform(get(requestPath)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
