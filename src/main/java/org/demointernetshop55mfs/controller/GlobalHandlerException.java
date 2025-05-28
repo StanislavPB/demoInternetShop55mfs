@@ -49,17 +49,19 @@ public class GlobalHandlerException {
 
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<String> handlerMethodArgumentNotValidException(MethodArgumentNotValidException e){
+    public ResponseEntity<Map<String, Object>> handlerMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        Map<String, Object> response = new HashMap<>();
 
-        StringBuilder responseMessage = new StringBuilder();
+        response.put("errors", e.getBindingResult().getFieldErrors().stream().map(error -> {
+            Map<String, Object> errorDetails = new HashMap<>();
+            errorDetails.put("field", error.getField());
+            errorDetails.put("message", error.getDefaultMessage());
+            errorDetails.put("rejectedValue", error.getRejectedValue());
+            return errorDetails;
+        }).toList());
 
-        e.getBindingResult().getAllErrors().forEach(objectError -> {
-            String fieldName = ((FieldError) objectError).getField();
-            String message = objectError.getDefaultMessage();
-            responseMessage.append(fieldName + " : " + message).append("\n");
-        });
-
-        return new ResponseEntity<>(responseMessage.toString(), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
+
 
 }

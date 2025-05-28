@@ -118,7 +118,7 @@ class PublicControllerTest {
                 """;
 
         String requestPath = "/api/public/registration";
-        String errorMessage = "Пользователь с email: user1@gmail.com уже зарегистрирован";
+        String errorMessage = "User with email: user1@gmail.com is already exist";
 
         mockMvc.perform(post(requestPath)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -133,7 +133,7 @@ class PublicControllerTest {
     void testConfirmRegistration() throws Exception {
 
         String requestPath = "/api/public/confirmation";
-        String requestParamName = "code";
+        String requestParamName = "confirmationCode";
         String requestParamValue = "someConfirmationCode";
         String expectedValue = "user1@gmail.com";
 
