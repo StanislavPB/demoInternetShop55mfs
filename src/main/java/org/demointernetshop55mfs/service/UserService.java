@@ -10,9 +10,12 @@ import org.demointernetshop55mfs.repository.UserRepository;
 import org.demointernetshop55mfs.service.exception.AlreadyExistException;
 import org.demointernetshop55mfs.service.exception.NotFoundException;
 import org.demointernetshop55mfs.service.util.Converter;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -152,6 +155,36 @@ public class UserService {
         return true;
 
 
+    }
+
+    public User findByEmail(String email) {
+        Optional<User> optionalUser = repository.findByEmail(email);
+        if (optionalUser.isPresent()) {
+            return optionalUser.get();
+        } else {
+            throw new NotFoundException("User with email " + email + " not found");
+        }
+    }
+    public User getCurrentUser() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        String email;
+
+        if (principal instanceof UserDetails) {
+            email = ((UserDetails) principal).getUsername();
+        } else {
+            email = principal.toString();
+        }
+
+        return findByEmail(email);
+    }
+
+
+    public String setPhotoLink(String fileLink) {
+        User currentUser = getCurrentUser();
+        currentUser.setPhotoLink(fileLink);
+        repository.save(currentUser);
+        return "Ссылка на файл успешно обновлена";
     }
 
 }
