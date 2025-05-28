@@ -72,8 +72,75 @@ public class UserService {
         return converter.toDto(user);
     }
 
-//    public UserResponseDto updateUser(UserUpdateRequestDto updateRequest){
-//        if ()
-//    }
+    public UserResponseDto updateUser(UserUpdateRequestDto updateRequest) {
+        if (updateRequest.getEmail() == null || updateRequest.getEmail().isBlank()) {
+            throw new IllegalArgumentException("Email must be provided to update user");
+        }
+
+        String userEmail = updateRequest.getEmail();
+
+        // найдем пользователя по email
+
+        User userByEmail = repository.findByEmail(userEmail)
+                .orElseThrow(() -> new NotFoundException("User with email: " + userEmail + " not found"));
+
+        // обновляем все доступные поля
+        // мы заранее НЕ ЗНАЕМ, а какие именно поля пользователь хочет поменять
+        //то есть в JSON (в теле запроса) будут (могут быть) ТОЛЬКО те поля(со значениеми)
+        // которые пользователь хочет менять (не обязательно все)
+
+        if (updateRequest.getFirstName() != null && !updateRequest.getFirstName().isBlank()) {
+            userByEmail.setFirstName(updateRequest.getFirstName());
+        }
+
+        if (updateRequest.getLastName() != null && !updateRequest.getLastName().isBlank()) {
+            userByEmail.setLastName(updateRequest.getLastName());
+        }
+
+        if (updateRequest.getHashPassword() != null && !updateRequest.getHashPassword().isBlank()) {
+            userByEmail.setHashPassword(updateRequest.getHashPassword());
+        }
+
+        // сохраняем (обновляем) пользователя
+
+        repository.save(userByEmail);
+
+        return converter.toDto(userByEmail);
+        // или вручную создать UserResponseDto из данных, которые хранятся в userByEmail
+
+    }
+
+    public boolean deleteUser(Integer id) {
+        // проверяем, что такой id существует
+        // и если нет - то сразу возвращаем false и ничего не пытаемся делать
+//
+//        if (!repository.existsById(id)) {
+//            return false;
+//        }
+
+
+        if (!repository.existsById(id)) {
+            throw new NotFoundException("Удалить пользователя с ID: " + id + " невозможно. Пользователь не найден");
+        }
+
+        // если пользователь существует, то
+        // вариант 1 - удаляем сразу по id
+
+        repository.deleteById(id);
+
+        // вариант 2 - сперва найдем объект по этому id
+
+//        User userForDelete = repository.findById(id).get();
+//
+//        repository.delete(userForDelete);
+
+        // такой вариант может быть востребован в том случае, если
+        // мы будем возвращать не true / false, а ТОТ объект который мы удалили
+        // это иногда бывает необходимо для дополнительного контроля операций
+
+        return true;
+
+
+    }
 
 }

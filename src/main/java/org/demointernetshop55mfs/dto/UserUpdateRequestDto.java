@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class UserUpdateRequestDto {
 
+    private String email;
     private String lastName;
     private String firstName;
     private String hashPassword;
