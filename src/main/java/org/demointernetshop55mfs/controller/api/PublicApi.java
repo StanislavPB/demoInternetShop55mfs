@@ -1,5 +1,6 @@
 package org.demointernetshop55mfs.controller.api;
 
+import jakarta.validation.Valid;
 import org.demointernetshop55mfs.dto.UserRequestDto;
 import org.demointernetshop55mfs.dto.UserResponseDto;
 import org.springframework.http.ResponseEntity;
@@ -13,5 +14,5 @@ public interface PublicApi {
     // добавление нового пользователя
 
     @PostMapping("/registration")
-    public ResponseEntity<UserResponseDto> addNewUser(@RequestBody UserRequestDto request);
+    public ResponseEntity<UserResponseDto> addNewUser(@Valid @RequestBody UserRequestDto request);
 }
