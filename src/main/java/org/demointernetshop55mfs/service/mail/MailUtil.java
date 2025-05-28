@@ -13,7 +13,6 @@ import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 import java.util.HashMap;
 import java.util.Map;
 
-@Service
 @RequiredArgsConstructor
 public class MailUtil {
     private final Configuration freemakerConfiguration;
