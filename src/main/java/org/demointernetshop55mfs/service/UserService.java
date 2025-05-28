@@ -72,6 +72,17 @@ public class UserService {
         return converter.toDto(user);
     }
 
+
+    @Transactional
+    public UserResponseDto confirmationEmail(String code){
+        User user = confirmationCodeService.confirmUserByCode(code);
+        user.setStatus(User.Status.CONFIRMED);
+        repository.save(user);
+
+        return converter.toDto(user);
+    }
+
+
     public UserResponseDto updateUser(UserUpdateRequestDto updateRequest) {
         if (updateRequest.getEmail() == null || updateRequest.getEmail().isBlank()) {
             throw new IllegalArgumentException("Email must be provided to update user");
